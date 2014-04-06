@@ -21,6 +21,7 @@
     "angular": "~1.2.15",
     "requirejs": "~2.1.11",
     "underscore": "~1.6.0",
-    "angular-animate": "~1.2.16"
+    "angular-animate": "~1.2.16",
+    "timbre": "*"
   }
 }
