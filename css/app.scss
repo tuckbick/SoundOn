@@ -1,0 +1,76 @@
+@import "compass/reset",
+        "compass/css3/transition";
+
+$rem-base: 16px !default;
+$tran-time: 80ms;
+
+@function strip-unit($num) {
+    @return $num / ($num * 0 + 1);
+}
+
+@function convert-to-rem($value, $base-value: $rem-base)  {
+    $value: strip-unit($value) / strip-unit($base-value) * 1rem;
+@if ($value == 0rem) { $value: 0; } // Turn 0rem into 0
+@return $value;
+}
+
+@function rem-calc($values, $base-value: $rem-base) {
+    $max: length($values);
+
+    @if $max == 1 { @return convert-to-rem(nth($values, 1), $base-value); }
+
+    $remValues: ();
+    @for $i from 1 through $max {
+        $remValues: append($remValues, convert-to-rem(nth($values, $i), $base-value));
+    }
+    @return $remValues;
+}
+
+%button {
+    background-color: #DDDDDD;
+}
+
+html {
+    -webkit-user-select: none;
+    cursor: default;
+}
+
+.wrapper {
+    max-width: 1280px;
+    width: 100%;
+    margin: 0 auto;
+    background-color: #999999;
+}
+
+.controls {
+
+}
+    .control {
+        display: inline-block;
+        cursor: pointer;
+
+        &:active {
+            background-color: #EEEEEE;
+        }
+    }
+.board {
+    padding: 1px 0 0 1px;
+    font-size: 0;
+    white-space: nowrap;
+    overflow-x: scroll;
+}
+    .beat {
+        display: inline-block;
+    }
+        .note {
+            cursor: pointer;
+            height: 3rem;
+            width: 3rem;
+            margin: 0 1px 1px 0;
+        }
+        .note-true {
+            background: red;
+        }
+        .note-false {
+            background: blue;
+        }

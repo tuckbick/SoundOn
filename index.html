@@ -11,35 +11,60 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     
-    <meta property="twitter:account_id" content="XXXXXXXX" />
+    <link rel="stylesheet" type="text/css" href="css/app.css" />
 
-    <link href='http://fonts.googleapis.com/css?family=Roboto+Condensed' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" href="style.css">
-    
     <style>
-        @media print {
-            .row {
-                border-left: 0;
-            }
-            #sidebar {
-                display: none;
-            }
-            .row .right {
-                display: none;
-            }
-            #iframe_controls {
-                display: none !important;
-            }
-            .btn.icon {
-                display: none !important;
-            }
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
         }
     </style>
 
 </head>
-<body>
+<body ng-controller="MainCtrl" ng-cloak>
 
+    <div class="wrapper">
+
+        <div class="controls">
+            <div class="control control-play" ng-show="!playing" ng-click="playing=true">Play</div>
+            <div class="control control-pause" ng-show="playing" ng-click="playing=false">Pause</div>
+            <input type="number" class="control control-tempo" ng-model="tempo" />
+            <input type="number" class="control control-beat_num" ng-model="beat_num" />
+        </div>
+
+        <div class="board">
+            <div beat ng-repeat="beat in beats"></div>
+        </div>
+
+    </div>
+
+    <script src="js/lib/bower/requirejs/require.js"></script>
     <script>
+
+        requirejs.config({
+            baseUrl: 'js',
+            paths: {
+                'angular': 'lib/bower/angular/angular',
+                'angular-animate': 'lib/bower/angular-animate/angular-animate',
+                'underscore': 'lib/bower/underscore/underscore',
+                'timbre': 'lib/bower/timbre/timbre',
+                'subcollider': 'lib/subcollider'
+            },
+            shim: {
+                'angular': {
+                    exports: 'angular'
+                },
+                'angular-animate': ['angular'],
+                'timbre': {
+                    exports: 'T'
+                },
+                'subcollider': {
+                    exports: 'sc'
+                }
+            },
+            deps: ['app']
+        });
+
+        /*
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
         m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
@@ -47,6 +72,7 @@
 
         ga('create', 'UA-6013405-1', 'tuckbick.com');
         ga('send', 'pageview');
+        */
     </script>
 
 </body>
