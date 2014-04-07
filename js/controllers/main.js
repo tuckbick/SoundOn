@@ -1,8 +1,9 @@
 define([
     'underscore',
     'timbre',
-    'subcollider'
-], function (_, T, sc) {
+    'subcollider',
+    'util'
+], function (_, T, sc, util) {
     var Ctrl = function($scope, $timeout) {
 
 
@@ -14,21 +15,28 @@ define([
             song = null,
 
         compileSong = function() {
+            console.log('compile');
+            localStorage.setItem('beats', JSON.stringify($scope.beats));
             return timbre.rec(function(output) {
-                var midis = [69, 76, 69, 76, 69, 76, 69, 76];
-                var msec  = timbre.timevalue("1sec");
+                var key = 440; // Hz
+                var msec  = timbre.timevalue((60/$scope.tempo)+"sec");
                 var synth = T("OscGen", {env:T("perc", {r:msec, ar:true})});
 
                 T("interval", {interval:msec}, function(count) {
-                    if (count < midis.length) {
-                        // noteOnWithFreq(freq, velocity, opts)
-                        synth.noteOn(midis[count], 100);
+                    if (count < $scope.beats.length) {
+                        var beat = util.rmHashKey($scope.beats[count]);
+                        _.each(beat, function(note) {
+                            if (note.enabled) {
+                                synth.noteOnWithFreq(note.ratio * key, 100);
+                            }
+                        })
                     } else {
                         output.done();
                     }
                 }).start();
 
                 output.send(synth);
+
             }).then(function(result) {
                 song = T("buffer", {buffer:result, loop:true});
             });
@@ -42,10 +50,14 @@ define([
             song && song.pause();
         },
 
-        addColumn = function(beats, ratios) {
-            var beat = {};
-            _.each(ratios || $scope.ratios, function(note) {
-                beat[note] = false
+        addEmptyBeat = function(beats) {
+            var beat = [];
+            _.each($scope.ratios, function(ratio) {
+                // push note
+                beat.push({
+                    ratio: ratio,
+                    enabled: false
+                });
             })
             beats.push(beat)
         };
@@ -57,11 +69,21 @@ define([
 
         _.extend($scope, {
             pageReady: false,
-            tempo: 120,
-            beat_num: 8,
-            ratios: sc.Scale.chromatic()._ratios,
-            playing: false
+            tempo: parseInt(localStorage.getItem('tempo')) || 120,
+            beat_num: parseInt(localStorage.getItem('beat_num')) || 8,
+            ratios: sc.Scale.chromatic()._ratios.reverse(),
+            playing: false,
+            compileSong: compileSong
         })
+
+        var beats = JSON.parse(localStorage.getItem('beats'));
+        if (_.isEmpty(beats)) {
+            var beats = [];
+            _.each(_.range($scope.beat_num), function() {
+                addEmptyBeat(beats);
+            })
+        }
+        $scope.beats = beats;
 
 
 
@@ -76,34 +98,23 @@ define([
             }
         })
         $scope.$watch('tempo', function(new_val) {
-
+            if(_.isNumber(new_val)) {
+                localStorage.setItem('tempo', new_val);
+                compileSong();
+            }
         })
         $scope.$watch('beat_num', function(new_val, old_val) {
-            if (new_val > old_val) {
-                addColumn($scope.beats);
-            }
-            else if (new_val < old_val) {
-                $scope.beats.splice(new_val);
+            if (_.isNumber(new_val)) {
+                localStorage.setItem('beat_num', new_val);
+                if (new_val > old_val) {
+                    addEmptyBeat($scope.beats);
+                }
+                else if (new_val < old_val) {
+                    $scope.beats.splice(new_val);
+                }
+                compileSong();
             }
         })
-        $scope.$watch('ratios', function(ratios, old_val, scope) {
-            var beats = [];
-            _.each(_.range($scope.beat_num), function() {
-                addColumn(beats, ratios);
-            })
-            $scope.beats = beats;
-        })
-
-
-
-
-        // INIT
-
-        $timeout(function() {
-            compileSong();
-        }, 0)
-
-
 
 
     }

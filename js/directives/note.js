@@ -1,4 +1,6 @@
-define([], function() {
+define([
+    'util'
+], function(util) {
     
     var Dir = function() {
 
@@ -6,13 +8,12 @@ define([], function() {
             replace: true,
             transclude: true,
             templateUrl: 'partials/note.html',
+            scope: true,
             link: function(scope, element, attrs) {
-                element.on('click', function(event) {
-                    // debugger;
-                    // debugger;
-                    scope.$apply(function() {
-                        scope.enabled = !scope.enabled;
-                    })
+                scope.$watch('note.enabled', function(new_val, old_val) {
+                    if (new_val === old_val) return;
+                    if (util.isUndefined(new_val) && util.isUndefined(old_val)) return;
+                    scope.compileSong();
                 })
             }
         }
